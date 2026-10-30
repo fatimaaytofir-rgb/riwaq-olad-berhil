@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#0b0d10">
+<title>رواق أولاد برحيل</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#0b0d10;--panel:#13171d;--panel2:#1b2129;--orange:#f28c28;--text:#f5f5f5;--muted:#a4aab3;--border:#29313a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+header{height:66px;position:sticky;top:0;z-index:10;background:#0b0d10f5;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%}
+.brand{color:var(--orange);font-size:21px;font-weight:bold}
+.brand small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+.iconbtn{background:var(--panel2);color:white;border:1px solid var(--border);border-radius:11px;padding:9px 12px}
+main{max-width:1050px;margin:auto;padding:22px 16px 110px}
+.page{display:none}.page.active{display:block}
+h1,h2,h3{margin-top:0}h2{font-size:21px}
+p{line-height:1.9}.muted{color:var(--muted);font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:17px;margin-bottom:15px}
+.hero{padding:28px 22px;border-radius:22px;background:linear-gradient(130deg,#30200f,#171a20 60%,#10151b);border:1px solid #68401e;margin-bottom:24px}
+.hero h1{font-size:27px;line-height:1.6}.hero p{color:#d1d1d1}
+.btn{border:0;border-radius:12px;background:var(--orange);color:#17100a;padding:12px 16px;font-weight:bold}
+.btn.secondary{background:var(--panel2);color:white;border:1px solid var(--border)}
+.btn.full{width:100%}.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.book{min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:10px;overflow:hidden}
+.cover{width:100%;aspect-ratio:3/4;background:#202630;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--orange);overflow:hidden;margin-bottom:10px}
+.cover img{width:100%;height:100%;object-fit:cover}
+.book h3{font-size:14px;line-height:1.7;margin:4px 0}.book p{font-size:12px;color:var(--muted);margin:3px 0}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 13px}
+input,textarea,select{display:block;width:100%;background:#0e1217;border:1px solid var(--border);color:white;border-radius:11px;padding:12px;margin:7px 0 14px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--orange)}
+textarea{min-height:110px;resize:vertical;line-height:1.8}label{font-size:13px;color:#ddd}
+.formbox{max-width:520px;margin:20px auto}
+.notice{padding:12px;border-radius:12px;background:#20180f;color:#ffc47c;font-size:13px;line-height:1.8;margin-bottom:12px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid var(--border);padding:8px 12px;border-radius:30px;background:var(--panel2);color:white}
+.chip.active{border-color:var(--orange);color:var(--orange)}
+.listitem{padding:14px 0;border-bottom:1px solid var(--border)}.listitem:last-child{border-bottom:0}
+.empty{text-align:center;padding:32px 10px;color:var(--muted);line-height:1.9}
+.bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#101419f7;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 3px max(7px,env(safe-area-inset-bottom))}
+.navitem{border:0;background:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:6px 0}
+.navitem span{font-size:20px}.navitem.active{color:var(--orange)}
+.smallcreate{position:fixed;bottom:83px;right:50%;transform:translateX(50%);z-index:19;border:0;border-radius:25px;padding:10px 15px;background:var(--orange);color:#17100a;font-weight:bold;box-shadow:0 4px 20px #0008}
+.hidden{display:none!important}
+hr{border:0;border-top:1px solid var(--border);margin:20px 0}
+#toast{position:fixed;top:76px;left:12px;right:12px;margin:auto;max-width:480px;z-index:100;padding:13px;background:#242b33;border:1px solid var(--border);border-radius:12px;display:none;line-height:1.8}
+#toast.error{border-color:#9d4a3d}.readertext{white-space:pre-wrap;line-height:2.2;font-size:18px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+@media(min-width:700px){main{padding-top:28px}.hero{padding:40px}.grid{grid-template-columns:repeat(5,minmax(0,1fr))}.bottomnav{left:50%;right:auto;transform:translateX(-50%);width:min(650px,100%);border:1px solid var(--border);border-radius:18px 18px 0 0}.smallcreate{bottom:86px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">رواق أولاد برحيل<small>مساحة للقراءة والإبداع</small></div>
+ <div style="display:flex;gap:8px">
+  <button class="iconbtn" onclick="openPage('notifications')">♧</button>
+  <button class="iconbtn" onclick="openPage('account')">♙</button>
+ </div>
+</header>
+
+<main>
+<section id="home" class="page active">
+ <div class="hero">
+  <p style="color:var(--orange)">القراءة تجمعنا</p>
+  <h1>كل حكاية عظيمة تبدأ بكلمة.</h1>
+  <p>اكتشف عالماً من الروايات، شارك كتاباتك، وساهم في إثراء الثقافة والإبداع.</p>
+  <div class="btnrow">
+   <button class="btn" onclick="openPage('discover')">اكتشف الروايات</button>
+   <button class="btn secondary" onclick="startCreate()">اكتب روايتك</button>
+  </div>
+ </div>
+ <div class="sectionhead"><h2>أحدث الروايات</h2><button class="iconbtn" onclick="openPage('discover')">عرض الكل ←</button></div>
+ <div id="latestBooks" class="grid"></div>
+ <div class="sectionhead"><h2>المكتبة الثقافية</h2></div>
+ <div class="panel"><h3>كلماتك تستحق أن تُقرأ</h3><p class="muted">انشر روايتك، شارك أفكارك، واكتشف كتاباً جدد من مجتمعك.</p><button class="btn" onclick="startCreate()">ابدأ الكتابة</button></div>
+ <div class="sectionhead"><h2>المسابقات الثقافية</h2></div>
+ <div id="homeContests" class="panel muted">ستظهر هنا المسابقات الثقافية عند إضافتها.</div>
+</section>
+
+<section id="discover" class="page">
+ <h2>اكتشف الروايات</h2>
+ <input id="searchInput" placeholder="ابحث عن رواية أو كاتب..." oninput="filterBooks()">
+ <div class="chips" id="categoryChips">
+  <button class="chip active" onclick="setCategory('الكل',this)">الكل</button>
+  <button class="chip" onclick="setCategory('خيال',this)">خيال</button>
+  <button class="chip" onclick="setCategory('غموض',this)">غموض</button>
+  <button class="chip" onclick="setCategory('رعب',this)">رعب</button>
+  <button class="chip" onclick="setCategory('تاريخية',this)">تاريخية</button>
+  <button class="chip" onclick="setCategory('اجتماعية',this)">اجتماعية</button>
+ </div>
+ <div id="allBooks" class="grid" style="margin-top:18px"></div>
+</section>
+
+<section id="favorites" class="page"><h2>المفضلة</h2><p class="muted">الروايات التي احتفظت بها للعودة إليها.</p><div id="favoriteBooks" class="grid"></div></section>
+
+<section id="library" class="page">
+ <h2>مكتبتي</h2><p class="muted">رواياتك المنشورة ومسوداتك.</p><div id="myBooks"></div>
+ <hr><h3>الفصول التي كتبتها</h3><div id="myChapters"></div>
+</section>
+
+<section id="create" class="page">
+ <h2>نشر رواية جديدة</h2><p class="muted">املأ معلومات الرواية، ثم أرسلها إلى الإدارة للمراجعة.</p>
+ <div class="notice">لن تظهر الرواية للقراء قبل موافقة الإدارة عليها.</div>
+ <form id="publishForm">
+  <label>عنوان الرواية *</label><input id="bookTitle" required maxlength="150" placeholder="عنوان الرواية">
+  <label>وصف الرواية *</label><textarea id="bookDescription" required maxlength="4000" placeholder="عرّف القراء بروايتك وشخصياتها وأحداثها"></textarea>
+  <label>رابط صورة الغلاف</label><input id="bookCover" type="url" placeholder="https://...">
+  <label>التصنيف</label><select id="bookCategory"><option>خيال</option><option>غموض</option><option>رعب</option><option>تاريخية</option><option>اجتماعية</option><option>رومانسية</option><option>أخرى</option></select>
+  <label>عنوان الفصل الأول (اختياري)</label><input id="chapterTitle" placeholder="الفصل الأول">
+  <label>نص الفصل الأول</label><textarea id="chapterBody" placeholder="اكتب نص الفصل الأول هنا..."></textarea>
+  <button class="btn full" id="publishBtn">إرسال الرواية للمراجعة</button>
+ </form>
+</section>
+
+<section id="reader" class="page"><button class="iconbtn" onclick="openPage('discover')">→ رجوع</button><div id="readerContent" style="margin-top:20px"></div></section>
+
+<section id="account" class="page">
+ <h2>حسابي</h2>
+ <div id="accountGuest" class="panel">
+  <div style="font-size:35px">♙</div><h3>مرحباً بك في رواق أولاد برحيل</h3>
+  <p class="muted">سجل الدخول للقراءة وحفظ المفضلة ونشر الروايات.</p>
+  <button class="btn full" onclick="openPage('auth')">تسجيل الدخول</button>
+ </div>
+ <div id="accountInfo" class="panel hidden">
+  <h3 id="profileName"></h3><p id="profileRole" class="muted"></p><p id="profileEmail" class="muted"></p>
+  <button class="btn secondary" onclick="openPage('library')">رواياتي ومكتبتي</button>
+  <button id="adminBtn" class="btn hidden" onclick="openPage('admin')">لوحة الإدارة</button>
+  <hr><button class="btn secondary full" onclick="signOut()">تسجيل الخروج</button>
+ </div>
+ <div class="panel">
+  <div class="listitem" onclick="openPage('favorites')">♡ المفضلة</div>
+  <div class="listitem" onclick="openPage('notifications')">♧ الإشعارات</div>
+  <div class="listitem" onclick="openPage('contests')">✦ المسابقات الثقافية</div>
+  <div class="listitem" onclick="openPage('help')">؟ المساعدة والدعم</div>
+  <div class="listitem" onclick="openPage('about')">ⓘ عن رواق أولاد برحيل</div>
+ </div>
+</section>
+
+<section id="auth" class="page">
+ <div class="formbox">
+  <h2 id="authHeading">مرحباً بك</h2><p class="muted">حسابك يفتح لك أبواب القراءة والكتابة.</p>
+  <div class="chips" style="margin:18px 0">
+   <button id="tabLogin" class="chip" onclick="showAuthMode('login')">لدي حساب</button>
+   <button id="tabSignup" class="chip active" onclick="showAuthMode('signup')">إنشاء حساب جديد</button>
+  </div>
+  <div id="signupFields">
+   <label>الاسم الذي سيظهر للقراء *</label><input id="signupName" maxlength="70" placeholder="الاسم أو الاسم المستعار">
+   <label>نوع الحساب</label><select id="signupRole"><option value="reader">قارئ</option><option value="writer">كاتب</option></select>
+   <p class="muted">يمكنك القراءة والكتابة في الحالتين.</p>
+   <button class="btn full" onclick="continueGoogleSignup()">متابعة واختيار حساب Google</button>
+  </div>
+  <div id="loginFields" class="hidden">
+   <p>اختار حساب Google الذي سبق أن سجلت به.</p>
+   <button class="btn full" onclick="googleLogin()">المتابعة باستخدام Google</button>
+  </div>
+  <hr><button class="btn secondary full" onclick="openPage('home')">العودة للرئيسية</button>
+ </div>
+</section>
+
+<section id="notifications" class="page"><h2>الإشعارات</h2><div id="notificationsList" class="panel"><div class="empty">ستظهر هنا الإشعارات المتعلقة بحسابك ورواياتك.</div></div></section>
+<section id="contests" class="page"><h2>المسابقات الثقافية</h2><div id="contestsList" class="panel"><div class="empty">لا توجد مسابقات معلنة حالياً.</div></div></section>
+
+<section id="help" class="page">
+ <h2>المساعدة والدعم</h2><div class="panel"><p>هل واجهت مشكلة في الحساب أو نشر رواية؟ أرسل رسالة للإدارة.</p>
+ <form id="supportForm"><label>موضوع الرسالة</label><input id="supportSubject" required placeholder="مثلاً: مشكلة في نشر رواية"><label>تفاصيل الرسالة</label><textarea id="supportMessage" required placeholder="اشرح المشكلة"></textarea><button class="btn full">إرسال الرسالة</button></form>
+ </div>
+</section>
+
+<section id="about" class="page">
+ <h2>عن رواق أولاد برحيل</h2><div class="panel">
+  <h3 style="color:var(--orange)">رواق أولاد برحيل</h3>
+  <p>منصة ثقافية تهدف إلى تشجيع القراءة والكتابة وإتاحة الفرصة للشباب لمشاركة إبداعاتهم الأدبية واكتشاف مواهب جديدة.</p>
+  <p>نتقدم بالشكر والتقدير إلى <strong>المركب الثقافي أولاد برحيل</strong> على دعمه ومساهمته في تشجيع الشباب والثقافة والإبداع.</p>
+  <p class="muted">معاً من أجل مجتمع يقرأ ويكتب ويبدع.</p>
+ </div>
+</section>
+
+<section id="admin" class="page">
+ <h2>لوحة الإدارة</h2><div class="notice">هذه الواجهة للمسؤولين المصرح لهم فقط، ويجب حماية صلاحيات الإدارة في قاعدة البيانات أيضاً.</div>
+ <div class="sectionhead"><h3>الروايات قيد المراجعة</h3><button class="iconbtn" onclick="loadAdmin()">تحديث</button></div><div id="pendingBooks"></div>
+</section>
+
+<footer>رواق أولاد برحيل · القراءة والإبداع يجمعاننا</footer>
+</main>
+
+<button id="createFloat" class="smallcreate hidden" onclick="startCreate()">＋ إنشاء رواية</button>
+<nav class="bottomnav">
+ <button class="navitem active" data-page="home" onclick="openPage('home')"><span>⌂</span>الرئيسية</button>
+ <button class="navitem" data-page="discover" onclick="openPage('discover')"><span>⌕</span>اكتشف</button>
+ <button class="navitem" data-page="contests" onclick="openPage('contests')"><span>✦</span>المسابقات</button>
+ <button class="navitem" data-page="library" onclick="openPage('library')"><span>▤</span>مكتبتي</button>
+ <button class="navitem" data-page="account" onclick="openPage('account')"><span>♙</span>حسابي</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://peoqsaxjixlfmpjxxyjr.supabase.co';
+const SUPABASE_KEY='sb_publishable_nwTfZdDY3F-NJKDNv21JPA_5ZZDEeSo';
+const SITE_URL='https://nabd-main.hamzagames693.workers.dev/';
+
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+ auth:{
+  persistSession:true,
+  autoRefreshToken:true,
+  detectSessionInUrl:true
+ }
+});
+
+let currentUser=null,profile=null,books=[],favorites=new Set();
+let activeCategory='الكل',isAdmin=false,selectedBook=null;
+let authBusy=false,profileSyncUserId=null;
+
+function toast(msg,error=false){
+ const el=document.getElementById('toast');
+ el.textContent=msg;
+ el.className=error?'error':'';
+ el.style.display='block';
+ clearTimeout(window.toastTimer);
+ window.toastTimer=setTimeout(()=>el.style.display='none',5000);
+}
+function esc(s=''){
+ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function openPage(id){
+ const page=document.getElementById(id);
+ if(!page)return;
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ page.classList.add('active');
+ document.querySelectorAll('.navitem').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+ window.scrollTo({top:0,behavior:'smooth'});
+ if(id==='discover')renderBooks('allBooks',filterList());
+ if(id==='favorites')renderBooks('favoriteBooks',books.filter(b=>favorites.has(String(b.id))));
+ if(id==='library')loadLibrary();
+ if(id==='account')renderAccount();
+ if(id==='notifications')loadNotifications();
+ if(id==='contests')loadContests();
+ if(id==='admin')loadAdmin();
+}
+
+function requireLogin(){
+ if(currentUser)return true;
+ toast('سجل الدخول أولاً.');
+ openPage('auth');
+ return false;
+}
+function startCreate(){if(requireLogin())openPage('create');}
+
+function showAuthMode(mode){
+ document.getElementById('signupFields').classList.toggle('hidden',mode!=='signup');
+ document.getElementById('loginFields').classList.toggle('hidden',mode!=='login');
+ document.getElementById('tabSignup').classList.toggle('active',mode==='signup');
+ document.getElementById('tabLogin').classList.toggle('active',mode==='login');
+ document.getElementById('authHeading').textContent=mode==='signup'?'إنشاء حساب جديد':'تسجيل الدخول';
+}
+
+async function continueGoogleSignup(){
+ if(authBusy)return;
+ const name=document.getElementById('signupName').value.trim();
+ if(name.length<2){toast('كتب الاسم ديالك، على الأقل حرفين.',true);return;}
+ const role=document.getElementById('signupRole').value;
+ localStorage.setItem('raw_pending_profile',JSON.stringify({name,role}));
+ await googleLogin();
+}
+
+async function googleLogin(){
+ if(authBusy)return;
+ authBusy=true;
+ try{
+  const {error}=await db.auth.signInWithOAuth({
+   provider:'google',
+   options:{
+    redirectTo:SITE_URL,
+    queryParams:{prompt:'select_account'}
+   }
+  });
+  if(error)throw error;
+ }catch(e){
+  authBusy=false;
+  toast('تعذر بدء تسجيل الدخول: '+(e.message||'خطأ غير معروف'),true);
+ }
+}
+
+async function signOut(){
+ const {error}=await db.auth.signOut();
+ if(error){toast('تعذر تسجيل الخروج: '+error.message,true);return;}
+ currentUser=null;profile=null;isAdmin=false;favorites=new Set();profileSyncUserId=null;
+ updateAuthUI();
+ openPage('home');
+ toast('تم تسجيل الخروج.');
+}
+
+async function syncProfile(user){
+ if(!user)return;
+ currentUser=user;
+ profileSyncUserId=user.id;
+
+ let pending=null;
+ try{pending=JSON.parse(localStorage.getItem('raw_pending_profile')||'null')}catch(e){}
+ const meta=user.user_metadata||{};
+ const name=(pending&&pending.name)||meta.full_name||meta.name||(user.email||'قارئ').split('@')[0];
+ const role=(pending&&pending.role)||'reader';
+
+ let found=await db.from('profiles').select('*').eq('id',user.id).maybeSingle();
+ if(found.error){
+  const alt=await db.from('profiles').select('*').eq('user_id',user.id).maybeSingle();
+  if(!alt.error)found=alt;
+ }
+ profile=found.error?null:found.data;
+
+ if(!profile){
+  const row={id:user.id,full_name:name,role:role,avatar_url:meta.avatar_url||meta.picture||null};
+  const created=await db.from('profiles').insert(row).select().maybeSingle();
+  if(!created.error)profile=created.data;
+ }
+
+ if(pending&&profile)localStorage.removeItem('raw_pending_profile');
+
+ const fav=localStorage.getItem('raw_favorites_'+user.id);
+ try{favorites=new Set(JSON.parse(fav||'[]').map(String))}catch(e){favorites=new Set()}
+
+ await checkAdmin();
+
+ if(currentUser&&currentUser.id===user.id){
+  updateAuthUI();
+  renderBooks('latestBooks',books.slice(0,6));
+  renderBooks('allBooks',filterList());
+  if(document.getElementById('account').classList.contains('active'))renderAccount();
+ }
+}
+
+async function checkAdmin(){
+ isAdmin=false;
+ if(!currentUser)return;
+ let r=await db.from('admin_access').select('*').eq('user_id',currentUser.id).maybeSingle();
+ if(r.error)r=await db.from('admin_access').select('*').eq('id',currentUser.id).maybeSingle();
+ if(!r.error&&r.data){isAdmin=true;return;}
+ let old=await db.from('admin_users').select('*').eq('user_id',currentUser.id).maybeSingle();
+ if(old.error)old=await db.from('admin_users').select('*').eq('id',currentUser.id).maybeSingle();
+ isAdmin=!old.error&&!!old.data;
+}
+
+function updateAuthUI(){
+ const logged=!!currentUser;
+ document.getElementById('createFloat').classList.toggle('hidden',!logged);
+ document.getElementById('accountGuest').classList.toggle('hidden',logged);
+ document.getElementById('accountInfo').classList.toggle('hidden',!logged);
+ document.getElementById('adminBtn').classList.toggle('hidden',!isAdmin);
+ if(logged){
+  const meta=currentUser.user_metadata||{};
+  document.getElementById('profileName').textContent=(profile&&(profile.full_name||profile.name))||meta.full_name||meta.name||'حسابي';
+  document.getElementById('profileRole').textContent=((profile&&profile.role)==='writer'?'كاتب':'قارئ');
+  document.getElementById('profileEmail').textContent=currentUser.email||'';
+ }
+}
+function renderAccount(){updateAuthUI();}
+
+function bookTitle(b){return b.title||b.name||'رواية بلا عنوان'}
+function bookDescription(b){return b.description||b.summary||''}
+function bookCover(b){return b.cover_url||b.cover_image||b.image_url||''}
+function bookCategory(b){return b.category||b.genre||'أخرى'}
+
+async function loadBooks(){
+ const res=await db.from('contents').select('*').order('created_at',{ascending:false}).limit(100);
+ if(res.error){
+  books=[];renderBooks('latestBooks',[]);renderBooks('allBooks',[]);
+  console.warn('تعذر تحميل contents:',res.error.message);
+  return;
+ }
+ books=(res.data||[]).filter(b=>['published','approved','منشورة','مقبولة'].includes(String(b.status||'published').toLowerCase()));
+ renderBooks('latestBooks',books.slice(0,6));
+ renderBooks('allBooks',filterList());
+}
+
+function renderBooks(targetId,list){
+ const el=document.getElementById(targetId);if(!el)return;
+ if(!list.length){
+  el.innerHTML='<div class="empty" style="grid-column:1/-1">لا توجد روايات منشورة حالياً. كن أول من يشارك إبداعه.</div>';
+  return;
+ }
+ el.innerHTML=list.map(b=>{
+  const cover=bookCover(b),id=esc(b.id);
+  return `<article class="book">
+   <div class="cover">${cover?`<img src="${esc(cover)}" alt="غلاف الرواية" loading="lazy" onerror="this.style.display='none'">`:'✦'}</div>
+   <h3>${esc(bookTitle(b))}</h3><p>${esc(bookCategory(b))}</p>
+   <p>${esc(bookDescription(b).slice(0,90))}</p>
+   <div class="btnrow"><button class="btn" onclick="readBook('${id}')">اقرأ</button>
+   <button class="btn secondary" onclick="toggleFavorite('${id}')">${favorites.has(String(b.id))?'♥':'♡'}</button></div>
+  </article>`;
+ }).join('');
+}
+
+function filterList(){
+ const q=(document.getElementById('searchInput')?.value||'').trim().toLowerCase();
+ return books.filter(b=>(activeCategory==='الكل'||bookCategory(b)===activeCategory)&&
+ (bookTitle(b)+' '+bookDescription(b)+' '+bookCategory(b)).toLowerCase().includes(q));
+}
+function filterBooks(){renderBooks('allBooks',filterList())}
+function setCategory(category,btn){
+ activeCategory=category;
+ document.querySelectorAll('#categoryChips .chip').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');filterBooks();
+}
+
+function toggleFavorite(id){
+ if(!requireLogin())return;
+ id=String(id);
+ favorites.has(id)?favorites.delete(id):favorites.add(id);
+ localStorage.setItem('raw_favorites_'+currentUser.id,JSON.stringify([...favorites]));
+ renderBooks('allBooks',filterList());
+ renderBooks('latestBooks',books.slice(0,6));
+ renderBooks('favoriteBooks',books.filter(b=>favorites.has(String(b.id))));
+ toast(favorites.has(id)?'أضيفت للمفضلة.':'حذفت من المفضلة.');
+}
+
+async function readBook(id){
+ selectedBook=books.find(b=>String(b.id)===String(id));if(!selectedBook)return;
+ openPage('reader');
+ const el=document.getElementById('readerContent');
+ el.innerHTML='<div class="empty">جاري تحميل الفصول...</div>';
+ const r=await db.from('chapters').select('*').eq('content_id',selectedBook.id).order('chapter_number',{ascending:true});
+ const chapters=r.error?[]:(r.data||[]);
+ el.innerHTML=`<div class="panel"><h2>${esc(bookTitle(selectedBook))}</h2><p class="muted">${esc(bookCategory(selectedBook))}</p><p>${esc(bookDescription(selectedBook))}</p><button class="btn secondary" onclick="toggleFavorite('${esc(selectedBook.id)}')">♡ إضافة للمفضلة</button></div>`+
+ (chapters.length?chapters.map((c,i)=>`<article class="panel"><h3>${esc(c.title||('الفصل '+(i+1)))}</h3><div class="readertext">${esc(c.body||c.content||'')}</div></article>`).join(''):'<div class="empty">لا توجد فصول متاحة لهذه الرواية بعد.</div>');
+}
+
+document.getElementById('publishForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!requireLogin())return;
+ const btn=document.getElementById('publishBtn');btn.disabled=true;btn.textContent='جاري الإرسال...';
+ try{
+  const row={
+   user_id:currentUser.id,
+   title:document.getElementById('bookTitle').value.trim(),
+   description:document.getElementById('bookDescription').value.trim(),
+   cover_url:document.getElementById('bookCover').value.trim()||null,
+   category:document.getElementById('bookCategory').value,
+   status:'pending'
+  };
+  let res=await db.from('contents').insert(row).select().single();
+  if(res.error)throw new Error('تعذر حفظ الرواية: '+res.error.message);
+  const body=document.getElementById('chapterBody').value.trim();
+  if(body){
+   const chapter=await db.from('chapters').insert({
+    content_id:res.data.id,user_id:currentUser.id,
+    title:document.getElementById('chapterTitle').value.trim()||'الفصل الأول',
+    body,chapter_number:1
+   });
+   if(chapter.error)toast('حُفظت الرواية لكن الفصل لم يُحفظ: '+chapter.error.message,true);
+  }
+  e.target.reset();toast('تم إرسال الرواية للمراجعة.');
+  await loadLibrary();openPage('library');
+ }catch(err){toast(err.message,true)}
+ finally{btn.disabled=false;btn.textContent='إرسال الرواية للمراجعة'}
+});
+
+async function loadLibrary(){
+ const mine=document.getElementById('myBooks'),chEl=document.getElementById('myChapters');
+ if(!currentUser){mine.innerHTML='<div class="empty">سجل الدخول لعرض رواياتك.</div>';chEl.innerHTML='';return}
+ const r=await db.from('contents').select('*').eq('user_id',currentUser.id);
+ if(r.error){
+  console.error('خطأ تحميل رواياتي:',r.error);
+  mine.innerHTML='<div class="empty">تعذر تحميل الروايات: '+esc(r.error.message)+'</div>';
+  chEl.innerHTML='';return;
+ }
+ const own=r.data||[];
+ if(own.length&&own[0].created_at)own.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+ mine.innerHTML=own.length?own.map(b=>`<div class="listitem"><strong>${esc(bookTitle(b))}</strong><p class="muted">الحالة: ${esc(b.status||'قيد المراجعة')}</p><p class="muted">${esc(bookDescription(b).slice(0,130))}</p></div>`).join(''):'<div class="empty">لم تنشر أي رواية بعد.</div>';
+ if(!own.length){chEl.innerHTML='<div class="empty">لا توجد فصول بعد.</div>';return}
+ const cr=await db.from('chapters').select('*').in('content_id',own.map(b=>b.id));
+ if(cr.error){console.error('خطأ تحميل الفصول:',cr.error);chEl.innerHTML='<div class="empty">تعذر تحميل الفصول: '+esc(cr.error.message)+'</div>';return;}
+ chEl.innerHTML=(cr.data||[]).map(c=>`<div class="listitem">${esc(c.title||'فصل بلا عنوان')}</div>`).join('')||'<div class="empty">لا توجد فصول بعد.</div>';
+}
+
+async function loadNotifications(){
+ const el=document.getElementById('notificationsList');
+ if(!currentUser){el.innerHTML='<div class="empty">سجل الدخول لعرض إشعاراتك.</div>';return}
+ const r=await db.from('notifications').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(30);
+ if(r.error){el.innerHTML='<div class="empty">قسم الإشعارات حاضر، لكنه يحتاج جدول notifications وصلاحيات القراءة في Supabase.</div>';return}
+ el.innerHTML=(r.data||[]).map(n=>`<div class="listitem"><strong>${esc(n.title||'إشعار')}</strong><p>${esc(n.message||n.body||'')}</p></div>`).join('')||'<div class="empty">لا توجد إشعارات جديدة.</div>';
+}
+
+async function loadContests(){
+ const el=document.getElementById('contestsList');
+ const r=await db.from('contests').select('*').order('created_at',{ascending:false}).limit(30);
+ if(r.error){el.innerHTML='<div class="empty">لا توجد مسابقات مضافة حالياً. يحتاج هذا القسم إلى جدول contests في قاعدة البيانات.</div>';return}
+ el.innerHTML=(r.data||[]).map(c=>`<div class="listitem"><h3>${esc(c.title||c.name||'مسابقة ثقافية')}</h3><p>${esc(c.description||'')}</p></div>`).join('')||'<div class="empty">لا توجد مسابقات معلنة حالياً.</div>';
+}
+
+document.getElementById('supportForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!requireLogin())return;
+ const r=await db.from('reports').insert({
+  user_id:currentUser.id,
+  subject:document.getElementById('supportSubject').value.trim(),
+  message:document.getElementById('supportMessage').value.trim(),
+  status:'open'
+ });
+ if(r.error){toast('تعذر إرسال الرسالة. قد تختلف أعمدة reports في قاعدة بياناتك: '+r.error.message,true);return}
+ e.target.reset();toast('تم إرسال رسالتك للإدارة.');openPage('account');
+});
+
+async function loadAdmin(){
+ if(!currentUser||!isAdmin){toast('ليست لديك صلاحية الإدارة.',true);openPage('home');return}
+ const el=document.getElementById('pendingBooks');
+ const r=await db.from('contents').select('*').eq('status','pending').order('created_at',{ascending:true});
+ if(r.error){el.innerHTML='<div class="empty">تعذر تحميل الطلبات. تحقق من الصلاحيات.</div>';return}
+ el.innerHTML=(r.data||[]).map(b=>`<div class="panel"><h3>${esc(bookTitle(b))}</h3><p>${esc(bookDescription(b))}</p><div class="btnrow"><button class="btn" onclick="moderateBook('${esc(b.id)}','published')">موافقة ونشر</button><button class="btn secondary" onclick="moderateBook('${esc(b.id)}','rejected')">رفض</button></div></div>`).join('')||'<div class="empty">لا توجد روايات قيد المراجعة.</div>';
+}
+
+async function moderateBook(id,status){
+ if(!isAdmin)return;
+ const r=await db.from('contents').update({status}).eq('id',id);
+ if(r.error){toast('تعذر تغيير الحالة: '+r.error.message,true);return}
+ toast(status==='published'?'تم نشر الرواية.':'تم رفض الرواية.');
+ await loadAdmin();await loadBooks();
+}
+
+async function init(){
+ try{
+  const {data,error}=await db.auth.getSession();
+  if(error)console.warn('Session:',error.message);
+  if(data&&data.session){
+   currentUser=data.session.user;
+   await syncProfile(data.session.user);
+  }
+ }catch(e){
+  console.warn('Auth initialization:',e);
+ }
+ updateAuthUI();
+ await loadBooks();
+
+ db.auth.onAuthStateChange((event,session)=>{
+  if(session&&session.user){
+   currentUser=session.user;
+   if(profileSyncUserId!==session.user.id){
+    profileSyncUserId=session.user.id;
+    setTimeout(()=>{
+     syncProfile(session.user).catch(err=>{
+      console.warn('Profile sync:',err);
+      updateAuthUI();
+     });
+    },0);
+   }else{
+    updateAuthUI();
+   }
+  }else if(event==='SIGNED_OUT'){
+   currentUser=null;profile=null;isAdmin=false;favorites=new Set();profileSyncUserId=null;
+   updateAuthUI();
+  }
+ });
+}
+
+init();
+</script>
+</body>
+</html>
